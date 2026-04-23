@@ -1,4 +1,5 @@
 from search_utils import DEFAULT_SEARCH_LIMIT, load_movies
+import string
 
 def keyword_search(query, limit = DEFAULT_SEARCH_LIMIT):
     results = []
@@ -22,6 +23,8 @@ def keyword_search(query, limit = DEFAULT_SEARCH_LIMIT):
 
     print(string_out)
 
-def process_text(text):
+def process_text(text: str):
+    strip_punctuation = str.maketrans("", "", string.punctuation)
     text = text.lower()
+    text = text.translate(strip_punctuation)
     return text
