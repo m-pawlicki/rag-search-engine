@@ -1,4 +1,5 @@
 from search_utils import DEFAULT_SEARCH_LIMIT, load_movies, load_stopwords
+from nltk.stem import PorterStemmer
 import string
 
 def keyword_search(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> list[str]:
@@ -15,13 +16,13 @@ def keyword_search(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> list[str]:
 
     return results
 
-def preprocess_text(text: str):
+def preprocess_text(text: str) -> str:
     strip_punctuation = str.maketrans("", "", string.punctuation)
     text = text.lower()
     text = text.translate(strip_punctuation)
     return text
 
-def tokenize_text(text: str):
+def tokenize_text(text: str) -> list[str]:
     text = preprocess_text(text)
     tokens = text.split()
     valid_tokens = []
@@ -29,16 +30,25 @@ def tokenize_text(text: str):
         if token:
             valid_tokens.append(token)
     filtered_tokens = remove_stopwords(valid_tokens)
-    return filtered_tokens
+    stemmed_tokens = stem_tokens(filtered_tokens)
+    return stemmed_tokens
 
-def has_token_match(query_tokens: list[str], title_tokens: list[str]):
+def has_token_match(query_tokens: list[str], title_tokens: list[str]) -> bool:
     for query_token in query_tokens:
         for title_token in title_tokens:
             if query_token in title_token:
                 return True
     return False
 
-def remove_stopwords(tokens: list[str]):
+def remove_stopwords(tokens: list[str]) -> list[str]:
     stopwords = load_stopwords()
     filtered_tokens = [token for token in tokens if token not in stopwords]
     return filtered_tokens
+
+def stem_tokens(tokens: list[str]) -> list[str]:
+    stemmer = PorterStemmer()
+    stems = []
+    for token in tokens:
+        stem = stemmer.stem(token)
+        stems.append(stem)
+    return stems
