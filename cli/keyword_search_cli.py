@@ -12,7 +12,13 @@ def main() -> None:
 
     match args.command:
         case "search":
-            keyword_search.keyword_search(args.query)
+            print(f"Searching for: {args.query}")
+            search_result = keyword_search.keyword_search(args.query)
+            if len(search_result) == 0:
+                print("No results found!")
+            else:
+                for i in range(len(search_result)):
+                    print(f"{i+1}. {search_result[i]["title"]}")
         case _:
             parser.print_help()
 

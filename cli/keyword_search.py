@@ -1,7 +1,7 @@
-from search_utils import DEFAULT_SEARCH_LIMIT, load_movies
+from search_utils import DEFAULT_SEARCH_LIMIT, load_movies, load_stopwords
 import string
 
-def keyword_search(query: str, limit: int = DEFAULT_SEARCH_LIMIT):
+def keyword_search(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> list[str]:
     results = []
     movies = load_movies()
 
@@ -13,15 +13,7 @@ def keyword_search(query: str, limit: int = DEFAULT_SEARCH_LIMIT):
             if len(results) >= limit:
                 break
 
-    string_out = f"Searching for: {query}"
-
-    if len(results) == 0:
-        string_out += "\nNo results found!"
-    else:
-        for i in range(len(results)):
-            string_out += f"\n{i+1}. {results[i]["title"]}"
-
-    print(string_out)
+    return results
 
 def preprocess_text(text: str):
     strip_punctuation = str.maketrans("", "", string.punctuation)
@@ -36,11 +28,17 @@ def tokenize_text(text: str):
     for token in tokens:
         if token:
             valid_tokens.append(token)
-    return valid_tokens
+    filtered_tokens = remove_stopwords(valid_tokens)
+    return filtered_tokens
 
-def has_token_match(query_tokens, title_tokens):
+def has_token_match(query_tokens: list[str], title_tokens: list[str]):
     for query_token in query_tokens:
         for title_token in title_tokens:
             if query_token in title_token:
                 return True
     return False
+
+def remove_stopwords(tokens: list[str]):
+    stopwords = load_stopwords()
+    filtered_tokens = [token for token in tokens if token not in stopwords]
+    return filtered_tokens
