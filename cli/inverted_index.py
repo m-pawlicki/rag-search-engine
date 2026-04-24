@@ -78,3 +78,8 @@ class InvertedIndex():
         total_doc_count = len(self.docmap)
         term_match_doc_count = len(self.get_documents(token[0]))
         return math.log((total_doc_count + 1) / (term_match_doc_count + 1))
+    
+    def get_tf_idf(self, doc_id: int, term: str):
+        tf = self.get_tf(doc_id, term)
+        idf = self.get_idf(term)
+        return tf * idf

@@ -53,9 +53,7 @@ def main() -> None:
 
         case "tfidf":
             indexer.load()
-            tf = indexer.get_tf(args.doc_id, args.term)
-            idf = indexer.get_idf(args.term)
-            tf_idf = tf * idf
+            tf_idf = indexer.get_tf_idf(args.doc_id, args.term)
             print(f"TF-IDF score of '{args.term}' in document '{args.doc_id}': {tf_idf:.2f}")
 
         case _:
