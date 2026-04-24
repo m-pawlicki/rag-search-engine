@@ -9,7 +9,11 @@ def main() -> None:
     search_parser = subparsers.add_parser("search", help="Search movies using BM25")
     search_parser.add_argument("query", type=str, help="Search query")
 
-    subparsers.add_parser("build", help="Build the index and docmap")
+    subparsers.add_parser("build", help="Build the cache")
+
+    tf_parser = subparsers.add_parser("tf", help="Return frequency of a term for a given id")
+    tf_parser.add_argument("docid", type=int, help="Document ID")
+    tf_parser.add_argument("term", type=str, help="Search term")
 
     args = parser.parse_args()
     indexer = InvertedIndex()
@@ -24,9 +28,14 @@ def main() -> None:
                 for i in range(len(search_result)):
                     print(f"{i+1}. [{search_result[i]["id"]}] {search_result[i]["title"]}")
         case "build":
-            print("Building inverse index...")
+            print("Building the cache...")
             indexer.build()
             indexer.save()
+            print("Done!")
+        case "tf":
+            indexer.load()
+            freq = indexer.get_tf(args.docid, args.term)
+            print(f"Frequency of {args.term} in doc ID {args.docid}: {freq}")
         case _:
             parser.print_help()
 
