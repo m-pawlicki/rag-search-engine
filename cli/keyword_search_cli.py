@@ -11,12 +11,16 @@ def main() -> None:
 
     subparsers.add_parser("build", help="Build the cache")
 
-    tf_parser = subparsers.add_parser("tf", help="Return frequency of a term for a given id")
+    tf_parser = subparsers.add_parser("tf", help="Return frequency of a term for a given ID")
     tf_parser.add_argument("tf_id", type=int, help="Document ID")
     tf_parser.add_argument("tf_term", type=str, help="Search term")
 
     idf_parser = subparsers.add_parser("idf", help="Return inverse document frequency of a term")
     idf_parser.add_argument("idf_term", type=str, help="Search term")
+
+    tfidf_parser = subparsers.add_parser("tfidf", help="Return the TF-IDF of a term for a given ID")
+    tfidf_parser.add_argument("tfidf_id", type=int, help="Document ID")
+    tfidf_parser.add_argument("tfidf_term", type=str, help="Search term")
 
     args = parser.parse_args()
     indexer = InvertedIndex()
@@ -38,11 +42,17 @@ def main() -> None:
         case "tf":
             indexer.load()
             freq = indexer.get_tf(args.tf_id, args.tf_term)
-            print(f"Frequency of '{args.tf_term}' in doc ID {args.tf_id}: {freq}")
+            print(f"Frequency of '{args.tf_term}' in document '{args.tf_id}': {freq}")
         case "idf":
             indexer.load()
             idf = indexer.get_idf(args.idf_term)
             print(f"Inverse document frequency of '{args.idf_term}': {idf:.2f}")
+        case "tfidf":
+            indexer.load()
+            tf = indexer.get_tf(args.tfidf_id, args.tfidf_term)
+            idf = indexer.get_idf(args.tfidf_term)
+            tf_idf = tf * idf
+            print(f"TF-IDF score of '{args.tfidf_term}' in document '{args.tfidf_id}': {tf_idf:.2f}")
         case _:
             parser.print_help()
 
