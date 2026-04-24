@@ -1,15 +1,16 @@
-from keyword_search import tokenize_text
+import keyword_search
 from search_utils import CACHE_PATH, load_movies
-import os, pickle
+import os, pickle, sys
 
 class InvertedIndex():
-    # {token:str, doc_ids: set(int)}
-    index = {}
-    # {doc_id: int, doc_obj: obj?}
-    docmap = {}
+    def __init__(self):
+        # {token:str, doc_ids: set(int)}
+        self.index = {}
+        # {doc_id: int, doc_obj: obj?}
+        self.docmap = {}
 
     def __add_document(self, doc_id: int, text: str):
-        tokens = tokenize_text(text)
+        tokens = keyword_search.tokenize_text(text)
         for token in tokens:
             if token in self.index:
                 self.index[token].add(doc_id)
@@ -26,9 +27,10 @@ class InvertedIndex():
     def build(self):
         movies = load_movies()
         for movie in movies:
-            index_data = f"{movie["title"]} {movie["description"]}"
-            self.__add_document(movie["id"], index_data)
-            self.docmap[movie["id"]] = movie
+            movie_id = movie["id"]
+            movie_desc = f"{movie["title"]} {movie["description"]}"
+            self.__add_document(movie_id, movie_desc)
+            self.docmap[movie_id] = movie
 
     def save(self):
         if not os.path.exists(CACHE_PATH):
@@ -39,3 +41,13 @@ class InvertedIndex():
 
         with open(f"{CACHE_PATH}/docmap.pkl", "wb") as doc:
             pickle.dump(self.docmap, doc)
+
+    def load(self):
+        try:
+            with open(f"{CACHE_PATH}/index.pkl", "rb") as idx:
+                self.index = pickle.load(idx)
+            with open(f"{CACHE_PATH}/docmap.pkl", "rb") as doc:
+                self.docmap = pickle.load(doc)
+        except FileNotFoundError:
+            print("Error loading file(s)! Do they exist?")
+            sys.exit(1)

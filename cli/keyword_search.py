@@ -1,19 +1,30 @@
 from search_utils import DEFAULT_SEARCH_LIMIT, load_movies, load_stopwords
+from inverted_index import InvertedIndex
 from nltk.stem import PorterStemmer
 import string
 
 def keyword_search(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> list[str]:
     results = []
-    movies = load_movies()
+    indexer = InvertedIndex()
+    indexer.load()
+    query_tokens = tokenize_text(query)
+    seen = set()
 
-    for movie in movies:
-        query_tokens = tokenize_text(query)
-        title_tokens = tokenize_text(movie["title"])
-        if has_token_match(query_tokens, title_tokens):
-            results.append(movie)
+    for token in query_tokens:
+        doc_matches = indexer.get_documents(token)
+
+        if len(results) >= limit:
+            break
+
+        for match in doc_matches:
+            if match in seen:
+                continue
+            seen.add(match)
+            entry = {"id": match, "title": indexer.docmap[match]["title"]}
+            results.append(entry)
             if len(results) >= limit:
-                break
-
+                return results
+            
     return results
 
 def preprocess_text(text: str) -> str:
