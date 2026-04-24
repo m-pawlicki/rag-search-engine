@@ -1,6 +1,6 @@
 import keyword_search
 from search_utils import CACHE_PATH, load_movies
-import os, pickle, sys
+import os, pickle, sys, math
 from collections import defaultdict, Counter
 
 class InvertedIndex():
@@ -70,3 +70,11 @@ class InvertedIndex():
                 return self.term_frequencies[doc_id][token[0]]
         else:
             return 0
+        
+    def get_idf(self, term:str):
+        token = keyword_search.tokenize_text(term)
+        if len(token) > 1:
+            raise Exception("Error: More than one token detected.")
+        total_doc_count = len(self.docmap)
+        term_match_doc_count = len(self.get_documents(token[0]))
+        return math.log((total_doc_count + 1) / (term_match_doc_count + 1))
