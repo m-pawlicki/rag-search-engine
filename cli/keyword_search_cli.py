@@ -1,4 +1,4 @@
-import argparse, math
+import argparse
 import keyword_search
 from inverted_index import InvertedIndex
 
