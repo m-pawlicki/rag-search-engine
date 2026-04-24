@@ -1,8 +1,9 @@
-import json, io
+import json
 
 DEFAULT_SEARCH_LIMIT = 5
 DATA_PATH = "./data/movies.json"
 STOPWORDS_PATH = "./data/stopwords.txt"
+CACHE_PATH = "./cache"
 
 def load_movies():
     with open(DATA_PATH) as file:
