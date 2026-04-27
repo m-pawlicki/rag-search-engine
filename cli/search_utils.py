@@ -4,6 +4,7 @@ DEFAULT_SEARCH_LIMIT = 5
 DATA_PATH = "./data/movies.json"
 STOPWORDS_PATH = "./data/stopwords.txt"
 CACHE_PATH = "./cache"
+BM25_K1 = 1.5
 
 def load_movies():
     with open(DATA_PATH) as file:
