@@ -5,6 +5,7 @@ DATA_PATH = "./data/movies.json"
 STOPWORDS_PATH = "./data/stopwords.txt"
 CACHE_PATH = "./cache"
 BM25_K1 = 1.5
+BM25_B = 0.75
 
 def load_movies():
     with open(DATA_PATH) as file:

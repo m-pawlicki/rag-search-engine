@@ -1,5 +1,5 @@
 import keyword_search
-from search_utils import CACHE_PATH, load_movies, BM25_K1
+from search_utils import CACHE_PATH, load_movies, BM25_K1, BM25_B
 import os, pickle, sys, math
 from collections import defaultdict, Counter
 
@@ -11,12 +11,26 @@ class InvertedIndex():
         self.docmap: dict[int, dict] = {}
         # {doc_id: int, count: Counter()}
         self.term_frequencies: dict[int, Counter] = defaultdict(Counter)
+        self.doc_lengths = {}
 
     def __add_document(self, doc_id: int, text: str):
         tokens = keyword_search.tokenize_text(text)
+        total_tokens = len(tokens)
+
         for token in tokens:
             self.index[token].add(doc_id)
             self.term_frequencies[doc_id][token] += 1
+
+        self.doc_lengths[doc_id] = total_tokens
+
+    def __get_avg_doc_length(self) -> float:
+        num_docs = len(self.doc_lengths)
+        if num_docs == 0:
+            return 0.0
+        total = 0.0
+        for doc in self.doc_lengths:
+                total += self.doc_lengths[doc]
+        return total/num_docs
 
     def get_documents(self, term: str):
         lowercase_term = term.lower()
@@ -46,6 +60,9 @@ class InvertedIndex():
         with open(f"{CACHE_PATH}/term_frequencies.pkl", "wb") as tf:
             pickle.dump(self.term_frequencies, tf)
 
+        with open(f"{CACHE_PATH}/doc_lengths.pkl", "wb") as dl:
+            pickle.dump(self.doc_lengths, dl)
+
     def load(self):
         try:
             with open(f"{CACHE_PATH}/index.pkl", "rb") as idx:
@@ -56,6 +73,9 @@ class InvertedIndex():
 
             with open(f"{CACHE_PATH}/term_frequencies.pkl", "rb") as tf:
                 self.term_frequencies = pickle.load(tf)
+
+            with open(f"{CACHE_PATH}/doc_lengths.pkl", "rb") as dl:
+                self.doc_lengths = pickle.load(dl)
 
         except FileNotFoundError:
             print("Error loading file(s)! Do they exist?")
@@ -73,6 +93,8 @@ class InvertedIndex():
         if doc_id in self.term_frequencies:
             if token[0] in self.term_frequencies[doc_id]:
                 return self.term_frequencies[doc_id][token[0]]
+            else:
+                return 0
         else:
             return 0
         
@@ -111,23 +133,26 @@ class InvertedIndex():
             raise Exception("Error: More than one token detected.")
         total_doc_count = len(self.docmap)
         term_match_doc_count = len(self.get_documents(token[0]))
-        bm25idf = math.log((total_doc_count - term_match_doc_count + 0.5) / (term_match_doc_count + 0.5) + 1)
-        return bm25idf
+        bm25_idf = math.log((total_doc_count - term_match_doc_count + 0.5) / (term_match_doc_count + 0.5) + 1)
+        return bm25_idf
     
     def bm25_idf_command(self, term: str):
         self.load()
         bm25_idf = self.get_bm25_idf(term)
         return bm25_idf
     
-    def get_bm25_tf(self, doc_id: int, term: str, k1=BM25_K1):
+    def get_bm25_tf(self, doc_id: int, term: str, k1=BM25_K1, b=BM25_B):
         token = keyword_search.tokenize_text(term)
         if not self.is_single_token:
             raise Exception("Error: More than one token detected.")
         tf = self.get_tf(doc_id, term)
-        saturated_tf = (tf * (k1 + 1)) / (tf + k1)
-        return saturated_tf
+        doc_length = self.doc_lengths[doc_id]
+        avg_doc_length = self.__get_avg_doc_length()
+        length_norm = 1 - b + b * (doc_length / avg_doc_length)
+        bm25_tf = (tf * (k1 + 1)) / (tf + k1 * length_norm)
+        return bm25_tf
 
-    def bm25_tf_command(self, doc_id: int, term: str, k1=BM25_K1):
+    def bm25_tf_command(self, doc_id: int, term: str, k1=BM25_K1, b=BM25_B):
         self.load()
-        bm25_tf = self.get_bm25_tf(doc_id, term, k1)
+        bm25_tf = self.get_bm25_tf(doc_id, term, k1, b)
         return bm25_tf
