@@ -1,5 +1,5 @@
 import keyword_search
-from search_utils import CACHE_PATH, load_movies
+from search_utils import CACHE_PATH, load_movies, BM25_K1
 import os, pickle, sys, math
 from collections import defaultdict, Counter
 
@@ -61,9 +61,14 @@ class InvertedIndex():
             print("Error loading file(s)! Do they exist?")
             sys.exit(1)
 
+    def is_single_token(self, token: list[str]):
+        if len(token) > 1:
+            return False
+        return True
+
     def get_tf(self, doc_id: int, term: str):
         token = keyword_search.tokenize_text(term)
-        if len(token) > 1:
+        if not self.is_single_token(token):
             raise Exception("Error: More than one token detected.")
         if doc_id in self.term_frequencies:
             if token[0] in self.term_frequencies[doc_id]:
@@ -71,15 +76,45 @@ class InvertedIndex():
         else:
             return 0
         
+    def tf_command(self, doc_id: int, term: str):
+        self.load()
+        tf = self.get_tf(doc_id, term)
+        return tf
+        
     def get_idf(self, term:str):
         token = keyword_search.tokenize_text(term)
-        if len(token) > 1:
+        if not self.is_single_token(token):
             raise Exception("Error: More than one token detected.")
         total_doc_count = len(self.docmap)
         term_match_doc_count = len(self.get_documents(token[0]))
-        return math.log((total_doc_count + 1) / (term_match_doc_count + 1))
+        idf = math.log((total_doc_count + 1) / (term_match_doc_count + 1))
+        return idf
+    
+    def idf_command(self, term: str):
+        self.load()
+        idf = self.get_idf(term)
+        return idf
     
     def get_tf_idf(self, doc_id: int, term: str):
         tf = self.get_tf(doc_id, term)
         idf = self.get_idf(term)
         return tf * idf
+    
+    def tf_idf_command(self, doc_id: int, term: str):
+        self.load()
+        tf_idf = self.get_tf_idf(doc_id, term)
+        return tf_idf
+    
+    def get_bm25_idf(self, term: str) -> float:
+        token = keyword_search.tokenize_text(term)
+        if not self.is_single_token(token):
+            raise Exception("Error: More than one token detected.")
+        total_doc_count = len(self.docmap)
+        term_match_doc_count = len(self.get_documents(token[0]))
+        bm25idf = math.log((total_doc_count - term_match_doc_count + 0.5) / (term_match_doc_count + 0.5) + 1)
+        return bm25idf
+    
+    def bm25_idf_command(self, term: str):
+        self.load()
+        bm25idf = self.get_bm25_idf(term)
+        return bm25idf
