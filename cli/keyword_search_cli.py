@@ -1,7 +1,9 @@
+#!/usr/bin/env python3
+
 import argparse
-import keyword_search
-from inverted_index import InvertedIndex
-from search_utils import BM25_K1, BM25_B, DEFAULT_SEARCH_LIMIT
+from lib.keyword_search import keyword_search
+from lib.inverted_index import InvertedIndex
+from lib.search_utils import BM25_K1, BM25_B, DEFAULT_SEARCH_LIMIT
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Keyword Search CLI")
@@ -44,12 +46,12 @@ def main() -> None:
     match args.command:
         case "search":
             print(f"Searching for: {args.query}")
-            search_result = keyword_search.keyword_search(args.query, args.limit)
+            search_result = keyword_search(args.query, args.limit)
             if len(search_result) == 0:
                 print("No results found!")
             else:
-                for i in range(len(search_result)):
-                    print(f"{i+1}. ({search_result[i]["id"]}) {search_result[i]["title"]}")
+                for i, res in enumerate(search_result, start=1):
+                    print(f"{i}. ({res["id"]}) {res["title"]}")
 
         case "build":
             print("Building the cache...")
@@ -83,10 +85,8 @@ def main() -> None:
             if len(bm25_search_result) == 0:
                 print("No results found!")
             else:
-                count = 1
-                for k,v in bm25_search_result.items():
-                    print(f"{count}. ({k}) {indexer.docmap[k]["title"]} - Score: {v:.2f}")
-                    count += 1
+                for i, (k,v) in enumerate(bm25_search_result.items(), start=1):
+                    print(f"{i}. ({k}) {indexer.docmap[k]["title"]} - Score: {v:.2f}")
 
         case _:
             parser.print_help()

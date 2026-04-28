@@ -1,5 +1,5 @@
-from search_utils import DEFAULT_SEARCH_LIMIT, load_movies, load_stopwords
-from inverted_index import InvertedIndex
+from lib.search_utils import DEFAULT_SEARCH_LIMIT, load_movies, load_stopwords
+from lib.inverted_index import InvertedIndex
 from nltk.stem import PorterStemmer
 import string
 

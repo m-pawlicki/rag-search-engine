@@ -1,5 +1,5 @@
-import keyword_search
-from search_utils import CACHE_PATH, load_movies, BM25_K1, BM25_B, DEFAULT_SEARCH_LIMIT
+import lib.keyword_search as keyword_search
+from lib.search_utils import CACHE_PATH, load_movies, BM25_K1, BM25_B, DEFAULT_SEARCH_LIMIT
 import os, pickle, sys, math
 from collections import defaultdict, Counter
 
