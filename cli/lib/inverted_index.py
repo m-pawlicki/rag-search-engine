@@ -3,7 +3,7 @@ from lib.search_utils import CACHE_PATH, load_movies, BM25_K1, BM25_B, DEFAULT_S
 import os, pickle, sys, math
 from collections import defaultdict, Counter
 
-class InvertedIndex():
+class InvertedIndex:
     def __init__(self):
         # {token:str, doc_ids: set(int)}
         self.index = defaultdict(set)
