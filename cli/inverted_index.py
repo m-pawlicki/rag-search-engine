@@ -1,5 +1,5 @@
 import keyword_search
-from search_utils import CACHE_PATH, load_movies, BM25_K1, BM25_B
+from search_utils import CACHE_PATH, load_movies, BM25_K1, BM25_B, DEFAULT_SEARCH_LIMIT
 import os, pickle, sys, math
 from collections import defaultdict, Counter
 
@@ -156,3 +156,27 @@ class InvertedIndex():
         self.load()
         bm25_tf = self.get_bm25_tf(doc_id, term, k1, b)
         return bm25_tf
+    
+    def bm25(self, doc_id: int, term: str):
+        bm25_tf = self.get_bm25_tf(doc_id, term)
+        bm25_idf = self.get_bm25_idf(term)
+        score = bm25_tf * bm25_idf
+        return score
+
+    def bm25_search(self, query: str, limit=DEFAULT_SEARCH_LIMIT):
+        query_tokens = keyword_search.tokenize_text(query)
+        scores = {}
+        for doc in self.docmap:
+            doc_score = 0
+            for token in query_tokens:
+                doc_score += self.bm25(doc, token)
+            if doc_score > 0:
+                scores[doc] = doc_score
+        sorted_scores = sorted(scores.items(), key=lambda item:item[1], reverse=True)
+        score_limit = dict(sorted_scores[:limit])
+        return score_limit
+    
+    def bm25_search_command(self, query: str, limit=DEFAULT_SEARCH_LIMIT):
+        self.load()
+        results = self.bm25_search(query, limit)
+        return results

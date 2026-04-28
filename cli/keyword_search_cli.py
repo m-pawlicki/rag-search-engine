@@ -1,7 +1,7 @@
 import argparse
 import keyword_search
 from inverted_index import InvertedIndex
-from search_utils import BM25_K1, BM25_B
+from search_utils import BM25_K1, BM25_B, DEFAULT_SEARCH_LIMIT
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Keyword Search CLI")
@@ -9,6 +9,7 @@ def main() -> None:
 
     search_parser = subparsers.add_parser("search", help="Search movies using BM25")
     search_parser.add_argument("query", type=str, help="Search query")
+    search_parser.add_argument("limit", type=int, nargs='?', default=DEFAULT_SEARCH_LIMIT, help="Limit search results")
 
     subparsers.add_parser("build", help="Build the cache")
 
@@ -32,18 +33,23 @@ def main() -> None:
     bm25_tf_parser.add_argument("k1", type=float, nargs='?', default=BM25_K1, help="Tunable BM25 K1 parameter")
     bm25_tf_parser.add_argument("b", type=float, nargs='?', default=BM25_B, help="Tunable BM25 b parameter")
 
+    bm25search_parser = subparsers.add_parser("bm25search", help="Search movies using full BM25 scoring")
+    bm25search_parser.add_argument("query", type=str, help="Search query")
+    bm25search_parser.add_argument("limit", type=int, nargs='?', default=DEFAULT_SEARCH_LIMIT, help="Limit search results")
+
+
     args = parser.parse_args()
     indexer = InvertedIndex()
 
     match args.command:
         case "search":
             print(f"Searching for: {args.query}")
-            search_result = keyword_search.keyword_search(args.query)
+            search_result = keyword_search.keyword_search(args.query, args.limit)
             if len(search_result) == 0:
                 print("No results found!")
             else:
                 for i in range(len(search_result)):
-                    print(f"{i+1}. [{search_result[i]["id"]}] {search_result[i]["title"]}")
+                    print(f"{i+1}. ({search_result[i]["id"]}) {search_result[i]["title"]}")
 
         case "build":
             print("Building the cache...")
@@ -70,6 +76,17 @@ def main() -> None:
         case "bm25tf":
             bm25tf = indexer.bm25_tf_command(args.doc_id, args.term, args.k1, args.b)
             print(f"BM25 TF score of '{args.term}' in document '{args.doc_id}': {bm25tf:.2f}")
+
+        case "bm25search":
+            print(f"Searching for: {args.query}")
+            bm25_search_result = indexer.bm25_search_command(args.query, args.limit)
+            if len(bm25_search_result) == 0:
+                print("No results found!")
+            else:
+                count = 1
+                for k,v in bm25_search_result.items():
+                    print(f"{count}. ({k}) {indexer.docmap[k]["title"]} - Score: {v:.2f}")
+                    count += 1
 
         case _:
             parser.print_help()
