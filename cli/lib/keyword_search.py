@@ -89,7 +89,7 @@ class InvertedIndex:
     def get_tf(self, doc_id: int, term: str):
         token = tokenize_text(term)
         if not self.is_single_token(token):
-            raise Exception("Error: More than one token detected.")
+            raise ValueError("Error: More than one token detected.")
         if doc_id in self.term_frequencies:
             if token[0] in self.term_frequencies[doc_id]:
                 return self.term_frequencies[doc_id][token[0]]
@@ -101,7 +101,7 @@ class InvertedIndex:
     def get_idf(self, term:str):
         token = tokenize_text(term)
         if not self.is_single_token(token):
-            raise Exception("Error: More than one token detected.")
+            raise ValueError("Error: More than one token detected.")
         total_doc_count = len(self.docmap)
         term_match_doc_count = len(self.get_documents(token[0]))
         idf = math.log((total_doc_count + 1) / (term_match_doc_count + 1))
@@ -115,7 +115,7 @@ class InvertedIndex:
     def get_bm25_idf(self, term: str) -> float:
         token = tokenize_text(term)
         if not self.is_single_token(token):
-            raise Exception("Error: More than one token detected.")
+            raise ValueError("Error: More than one token detected.")
         total_doc_count = len(self.docmap)
         term_match_doc_count = len(self.get_documents(token[0]))
         bm25_idf = math.log((total_doc_count - term_match_doc_count + 0.5) / (term_match_doc_count + 0.5) + 1)
@@ -124,7 +124,7 @@ class InvertedIndex:
     def get_bm25_tf(self, doc_id: int, term: str, k1=BM25_K1, b=BM25_B):
         token = tokenize_text(term)
         if not self.is_single_token(token):
-            raise Exception("Error: More than one token detected.")
+            raise ValueError("Error: More than one token detected.")
         tf = self.get_tf(doc_id, term)
         doc_length = self.doc_lengths[doc_id]
         avg_doc_length = self.__get_avg_doc_length()
