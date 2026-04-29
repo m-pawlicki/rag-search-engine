@@ -81,8 +81,8 @@ def main() -> None:
             if len(bm25_search_result) == 0:
                 print("No results found!")
             else:
-                for i, (k,v) in enumerate(bm25_search_result.items(), start=1):
-                    print(f"{i}. ({k}) {indexer.docmap[k]["title"]} - Score: {v:.2f}")
+                for i, res in enumerate(bm25_search_result, start=1):
+                    print(f"{i}. ({res["id"]}) {res["title"]} - Score: {res["score"]:.2f}")
 
         case _:
             parser.print_help()

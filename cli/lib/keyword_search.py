@@ -14,7 +14,7 @@ class InvertedIndex:
         self.doc_lengths = {}
 
     def __add_document(self, doc_id: int, text: str):
-        tokens = keyword_search.tokenize_text(text)
+        tokens = tokenize_text(text)
         total_tokens = len(tokens)
 
         for token in tokens:
@@ -87,7 +87,7 @@ class InvertedIndex:
         return True
 
     def get_tf(self, doc_id: int, term: str):
-        token = keyword_search.tokenize_text(term)
+        token = tokenize_text(term)
         if not self.is_single_token(token):
             raise Exception("Error: More than one token detected.")
         if doc_id in self.term_frequencies:
@@ -99,7 +99,7 @@ class InvertedIndex:
             return 0
         
     def get_idf(self, term:str):
-        token = keyword_search.tokenize_text(term)
+        token = tokenize_text(term)
         if not self.is_single_token(token):
             raise Exception("Error: More than one token detected.")
         total_doc_count = len(self.docmap)
@@ -113,7 +113,7 @@ class InvertedIndex:
         return tf * idf
     
     def get_bm25_idf(self, term: str) -> float:
-        token = keyword_search.tokenize_text(term)
+        token = tokenize_text(term)
         if not self.is_single_token(token):
             raise Exception("Error: More than one token detected.")
         total_doc_count = len(self.docmap)
@@ -122,8 +122,8 @@ class InvertedIndex:
         return bm25_idf
     
     def get_bm25_tf(self, doc_id: int, term: str, k1=BM25_K1, b=BM25_B):
-        token = keyword_search.tokenize_text(term)
-        if not self.is_single_token:
+        token = tokenize_text(term)
+        if not self.is_single_token(token):
             raise Exception("Error: More than one token detected.")
         tf = self.get_tf(doc_id, term)
         doc_length = self.doc_lengths[doc_id]
@@ -139,17 +139,25 @@ class InvertedIndex:
         return score
 
     def bm25_search(self, query: str, limit=DEFAULT_SEARCH_LIMIT):
-        query_tokens = keyword_search.tokenize_text(query)
+        query_tokens = tokenize_text(query)
         scores = {}
+
         for doc in self.docmap:
             doc_score = 0
             for token in query_tokens:
                 doc_score += self.bm25(doc, token)
             if doc_score > 0:
                 scores[doc] = doc_score
+
         sorted_scores = sorted(scores.items(), key=lambda item:item[1], reverse=True)
-        score_limit = dict(sorted_scores[:limit])
-        return score_limit
+        results = []
+
+        for doc_id, score in sorted_scores[:limit]:
+            doc = self.docmap[doc_id]
+            entry = {"id": doc_id, "title": doc["title"], "score": score}
+            results.append(entry)
+
+        return results
     
 def build_command():
     idx = InvertedIndex()
@@ -192,7 +200,7 @@ def bm25_search_command(query: str, limit=DEFAULT_SEARCH_LIMIT):
     results = idx.bm25_search(query, limit)
     return results
 
-def keyword_search(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> list[str]:
+def keyword_search(query: str, limit: int = DEFAULT_SEARCH_LIMIT):
     results = []
     indexer = InvertedIndex()
     indexer.load()
