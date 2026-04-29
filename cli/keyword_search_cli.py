@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from lib.keyword_search import keyword_search
-from lib.inverted_index import InvertedIndex
+import lib.keyword_search as ks
 from lib.search_utils import BM25_K1, BM25_B, DEFAULT_SEARCH_LIMIT
 
 def main() -> None:
@@ -39,14 +38,12 @@ def main() -> None:
     bm25search_parser.add_argument("query", type=str, help="Search query")
     bm25search_parser.add_argument("limit", type=int, nargs='?', default=DEFAULT_SEARCH_LIMIT, help="Limit search results")
 
-
     args = parser.parse_args()
-    indexer = InvertedIndex()
 
     match args.command:
         case "search":
             print(f"Searching for: {args.query}")
-            search_result = keyword_search(args.query, args.limit)
+            search_result = ks.keyword_search(args.query, args.limit)
             if len(search_result) == 0:
                 print("No results found!")
             else:
@@ -55,33 +52,32 @@ def main() -> None:
 
         case "build":
             print("Building the cache...")
-            indexer.build()
-            indexer.save()
+            ks.build_command()
             print("Done!")
 
         case "tf":
-            tf = indexer.tf_command(args.doc_id, args.term)
+            tf = ks.tf_command(args.doc_id, args.term)
             print(f"Frequency of '{args.term}' in document '{args.doc_id}': {tf}")
 
         case "idf":
-            idf = indexer.idf_command(args.term)
+            idf = ks.idf_command(args.term)
             print(f"Inverse document frequency of '{args.term}': {idf:.2f}")
 
         case "tfidf":
-            tf_idf = indexer.tf_idf_command(args.doc_id, args.term)
+            tf_idf = ks.tf_idf_command(args.doc_id, args.term)
             print(f"TF-IDF score of '{args.term}' in document '{args.doc_id}': {tf_idf:.2f}")
 
         case "bm25idf":
-            bm25idf = indexer.bm25_idf_command(args.term)
+            bm25idf = ks.bm25_idf_command(args.term)
             print(f"BM25 IDF score of '{args.term}': {bm25idf:.2f}")
 
         case "bm25tf":
-            bm25tf = indexer.bm25_tf_command(args.doc_id, args.term, args.k1, args.b)
+            bm25tf = ks.bm25_tf_command(args.doc_id, args.term, args.k1, args.b)
             print(f"BM25 TF score of '{args.term}' in document '{args.doc_id}': {bm25tf:.2f}")
 
         case "bm25search":
             print(f"Searching for: {args.query}")
-            bm25_search_result = indexer.bm25_search_command(args.query, args.limit)
+            bm25_search_result = ks.bm25_search_command(args.query, args.limit)
             if len(bm25_search_result) == 0:
                 print("No results found!")
             else:
