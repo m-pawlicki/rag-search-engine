@@ -2,7 +2,7 @@
 
 import argparse
 import lib.semantic_search as ss
-from lib.search_utils import DEFAULT_SEARCH_LIMIT, load_movies
+from lib.search_utils import DEFAULT_SEARCH_LIMIT, DEFAULT_CHUNK_SIZE, load_movies
 
 def main():
     parser = argparse.ArgumentParser(description="Semantic Search CLI")
@@ -22,6 +22,10 @@ def main():
     search_parser.add_argument("query", type=str, help="Search query")
     search_parser.add_argument("--limit", type=int, default=DEFAULT_SEARCH_LIMIT, help="How many results to return")
 
+    chunk_parser = subparsers.add_parser("chunk", help="Chunk long text into smaller pieces")
+    chunk_parser.add_argument("text", type=str, help="The text to chunk")
+    chunk_parser.add_argument("--chunk-size", type=int, default=DEFAULT_CHUNK_SIZE, help="Size of each chunk in characters")
+
     args = parser.parse_args()
     
     match args.command:
@@ -40,6 +44,11 @@ def main():
             search_result = search_instance.search(args.query, args.limit)
             for i, res in enumerate(search_result, start=1):
                 print(f"{i}. {res["title"]} (score: {res["score"]})\n{res["description"][:140]}...\n")
+        case "chunk":
+            result = ss.chunk_text(args.text, args.chunk_size)
+            print(f"Chunking {result[0]} characters")
+            for i, res in enumerate(result[1], start=1):
+                print(f"{i}. {res}")
         case _:
             parser.print_help()
 

@@ -1,5 +1,5 @@
 from sentence_transformers import SentenceTransformer
-from lib.search_utils import CACHE_PATH, DEFAULT_SEARCH_LIMIT, load_movies
+from lib.search_utils import CACHE_PATH, DEFAULT_SEARCH_LIMIT, DEFAULT_CHUNK_SIZE, load_movies
 import numpy as np
 import os
 
@@ -101,3 +101,15 @@ def cosine_similarity(vec1, vec2):
         return 0.0
 
     return dot_product / (norm1 * norm2)
+
+def chunk_text(text: str, size=DEFAULT_CHUNK_SIZE):
+    total_characters = len(text)
+    split_text = text.split()
+    chunks = []
+
+    while len(split_text) > 0:
+        chunk = " ".join(split_text[:size])
+        chunks.append(chunk)
+        split_text = split_text[size:]
+
+    return (total_characters, chunks)
