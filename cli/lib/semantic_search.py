@@ -1,5 +1,5 @@
 from sentence_transformers import SentenceTransformer
-from lib.search_utils import CACHE_PATH, DEFAULT_SEARCH_LIMIT, DEFAULT_CHUNK_SIZE, load_movies
+from lib.search_utils import CACHE_PATH, DEFAULT_SEARCH_LIMIT, DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_OVERLAP, load_movies
 import numpy as np
 import os
 
@@ -102,14 +102,20 @@ def cosine_similarity(vec1, vec2):
 
     return dot_product / (norm1 * norm2)
 
-def chunk_text(text: str, size=DEFAULT_CHUNK_SIZE):
+def chunk_text(text: str, size=DEFAULT_CHUNK_SIZE, overlap=DEFAULT_CHUNK_OVERLAP):
     total_characters = len(text)
     split_text = text.split()
     chunks = []
 
-    while len(split_text) > 0:
+    if total_characters == 0:
+        raise ValueError("No text to chunk!")
+    
+    if overlap < 0:
+        raise ValueError("Overlap cannot be negative.")
+
+    while len(split_text) > (0 + overlap):
         chunk = " ".join(split_text[:size])
         chunks.append(chunk)
-        split_text = split_text[size:]
+        split_text = split_text[(size - overlap):]
 
     return (total_characters, chunks)
