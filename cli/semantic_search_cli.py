@@ -35,7 +35,9 @@ def main():
     semantic_chunk_parser = subparsers.add_parser("semantic_chunk", help="Chunk long text into smaller pieces")
     semantic_chunk_parser.add_argument("text", type=str, help="The text to chunk")
     semantic_chunk_parser.add_argument("--max-chunk-size", type=int, default=DEFAULT_SEMANTIC_CHUNK_SIZE, help="Size of each chunk in sentences")
-    semantic_chunk_parser.add_argument("--overlap", type=int, default=DEFAULT_CHUNK_OVERLAP, help="How much overlap in each chunk")    
+    semantic_chunk_parser.add_argument("--overlap", type=int, default=DEFAULT_CHUNK_OVERLAP, help="How much overlap in each chunk")
+
+    subparsers.add_parser("embed_chunks", help="Embed document chunks")    
 
     args = parser.parse_args()
     
@@ -71,7 +73,10 @@ def main():
             print(f"Semantically chunking {len(args.text)} characters")
             for i, res in enumerate(result, start=1):
                 print(f"{i}. {res}")
-                
+
+        case "embed_chunks":
+            ss.embed_chunks()
+
         case _:
             parser.print_help()
 
