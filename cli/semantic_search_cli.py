@@ -37,7 +37,11 @@ def main():
     semantic_chunk_parser.add_argument("--max-chunk-size", type=int, default=DEFAULT_SEMANTIC_CHUNK_SIZE, help="Size of each chunk in sentences")
     semantic_chunk_parser.add_argument("--overlap", type=int, default=DEFAULT_CHUNK_OVERLAP, help="How much overlap in each chunk")
 
-    subparsers.add_parser("embed_chunks", help="Embed document chunks")    
+    subparsers.add_parser("embed_chunks", help="Embed document chunks")
+
+    search_chunked_parser = subparsers.add_parser("search_chunked", help="Search semantically using chunks")
+    search_chunked_parser.add_argument("query", type=str, help="Query to search for")
+    search_chunked_parser.add_argument("--limit", type=int, default=DEFAULT_SEARCH_LIMIT, help="How many results to return")
 
     args = parser.parse_args()
     
@@ -55,27 +59,19 @@ def main():
             ss.embed_query_text(args.query)
 
         case "search":
-            search_instance = ss.SemanticSearch()
-            movies = load_movies()
-            search_instance.load_or_create_embeddings(movies)
-            search_result = search_instance.search(args.query, args.limit)
-            for i, res in enumerate(search_result, start=1):
-                print(f"{i}. {res["title"]} (score: {res["score"]})\n{res["description"][:140]}...\n")
+            ss.search_command(args.query, args.limit)
 
         case "chunk":
-            result = ss.chunk_text(args.text, args.chunk_size, args.overlap)
-            print(f"Chunking {len(args.text)} characters")
-            for i, res in enumerate(result, start=1):
-                print(f"{i}. {res}")
+            ss.chunk_command(args.text, args.chunk_size, args.overlap)
 
         case "semantic_chunk":
-            result = ss.semantic_chunk_text(args.text, args.max_chunk_size, args.overlap)
-            print(f"Semantically chunking {len(args.text)} characters")
-            for i, res in enumerate(result, start=1):
-                print(f"{i}. {res}")
+            ss.semantic_chunk_command(args.text, args.max_chunk_size, args.overlap)
 
         case "embed_chunks":
             ss.embed_chunks()
+
+        case "search_chunked":
+            ss.search_chunked_command(args.query, args.limit)
 
         case _:
             parser.print_help()
