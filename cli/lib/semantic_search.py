@@ -200,33 +200,71 @@ def chunk_text(text: str, size=DEFAULT_CHUNK_SIZE, overlap=DEFAULT_CHUNK_OVERLAP
     split_text = text.split()
     chunks = []
 
-    if len(text) == 0:
-        raise ValueError("No text to chunk!")
+    if not text:
+        return []
     
     if overlap < 0:
         raise ValueError("Overlap cannot be negative.")
+    
+    if size <= overlap:
+        raise ValueError("Overlap cannot be greater than size.")
+    
+    i = 0
+    n_words = len(split_text)
 
-    while len(split_text) > (0 + overlap):
-        chunk = " ".join(split_text[:size])
-        chunks.append(chunk)
-        split_text = split_text[(size - overlap):]
+    while i < n_words:
+        chunk_words = split_text[i : i+size]
+        if chunks and len(chunk_words) <= overlap:
+            break
+
+        chunks.append(" ".join(chunk_words))
+        i += size - overlap
 
     return chunks
 
 def semantic_chunk_text(text: str, size=DEFAULT_SEMANTIC_CHUNK_SIZE, overlap=DEFAULT_CHUNK_OVERLAP):
-    split_text = re.split(r"(?<=[.!?])\s+", text)
-    chunks = []
+    stripped_text = text.strip()
 
-    if len(text) == 0:
-        raise ValueError("No text to chunk!")
+    if not stripped_text:
+        return []
+    
+    split_text = re.split(r"(?<=[.!?])\s+", stripped_text)
+
+    if len(split_text) == 1 and not text.endswith((".", "?", "!")):
+        split_text = [stripped_text]
+
+    chunks = []
     
     if overlap < 0:
         raise ValueError("Overlap cannot be negative.")
+    
+    if size <= overlap:
+        raise ValueError("Overlap cannot be greater than size.")
 
-    while len(split_text) > (0 + overlap):
-        chunk = " ".join(split_text[:size])
+
+    i = 0
+    n_sentences = len(split_text)
+
+    while i < n_sentences:
+        chunk_sentences = split_text[i: i+size]
+        
+        if chunks and len(chunk_sentences) <= overlap:
+            break
+
+        clean_sentences = []
+
+        for sentence in chunk_sentences:
+            sentence = sentence.strip()
+            if sentence:
+                clean_sentences.append(sentence)
+
+        if not clean_sentences:
+            i += size - overlap
+            continue
+        
+        chunk = " ".join(clean_sentences)
         chunks.append(chunk)
-        split_text = split_text[(size - overlap):]
+        i += size - overlap
 
     return chunks
 
