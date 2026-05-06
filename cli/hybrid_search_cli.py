@@ -1,6 +1,6 @@
 import argparse
 import lib.hybrid_search as hs
-from lib.search_utils import DEFAULT_SEARCH_LIMIT, ALPHA
+from lib.search_utils import DEFAULT_SEARCH_LIMIT, ALPHA, K_VALUE
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Hybrid Search CLI")
@@ -14,6 +14,11 @@ def main() -> None:
     weighred_search_parser.add_argument("--alpha", type=float, default=ALPHA, help="Weight of keyword to semantic search, 1.0 = 100%% keyword, 0.0 = 100%% semantic")
     weighred_search_parser.add_argument("--limit", type=int, default=DEFAULT_SEARCH_LIMIT, help="How many search results to return")
 
+    rrf_search_parser = subparsers.add_parser("rrf-search", help="Search using Reciprocal Rank Fusion")
+    rrf_search_parser.add_argument("query", type=str, help="Search query")
+    rrf_search_parser.add_argument("--k", type=int, default=K_VALUE, help="How much weight higher-ranked results have vs lower-ranked ones, lower k = more weight, higher k = less weight")
+    rrf_search_parser.add_argument("--limit", type=int, default=DEFAULT_SEARCH_LIMIT, help="How many search results to return")
+
     args = parser.parse_args()
 
     match args.command:
@@ -21,6 +26,8 @@ def main() -> None:
             hs.normalize_scores_command(args.scores)
         case "weighted-search":
             hs.weighted_search_command(args.query, args.alpha, args.limit)
+        case "rrf-search":
+            hs.rrf_search_command(args.query, args.k, args.limit)
         case _:
             parser.print_help()
 

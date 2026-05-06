@@ -18,6 +18,8 @@ BM25_K1 = 1.5
 BM25_B = 0.75
 # Weighting of keyword to semantic results, 1.0 = 100% keyword, 0.0 = 100% semantic
 ALPHA = 0.5
+# k value for RRF (reciprocal rank fusion), how much weight we give to higher-ranked results vs lower-ranked results, eg. lower k = more weight, higher k = less weight
+K_VALUE = 60
 
 def load_movies():
     with open(DATA_PATH) as file:
