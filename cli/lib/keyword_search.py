@@ -13,6 +13,11 @@ class InvertedIndex:
         self.term_frequencies: dict[int, Counter] = defaultdict(Counter)
         self.doc_lengths = {}
 
+        self.index_path = os.path.join(CACHE_PATH, "index.pkl")
+        self.docmap_path = os.path.join(CACHE_PATH, "docmap.pkl")
+        self.term_freq_path = os.path.join(CACHE_PATH, "term_frequencies.pkl")
+        self.doc_len_path = os.path.join(CACHE_PATH, "doc_lengths.pkl")
+
     def __add_document(self, doc_id: int, text: str):
         tokens = tokenize_text(text)
         total_tokens = len(tokens)
@@ -51,30 +56,30 @@ class InvertedIndex:
         if not os.path.exists(CACHE_PATH):
             os.makedirs(CACHE_PATH)
 
-        with open(f"{CACHE_PATH}/index.pkl", "wb") as idx:
+        with open(self.index_path, "wb") as idx:
             pickle.dump(self.index, idx)
 
-        with open(f"{CACHE_PATH}/docmap.pkl", "wb") as doc:
+        with open(self.docmap_path, "wb") as doc:
             pickle.dump(self.docmap, doc)
 
-        with open(f"{CACHE_PATH}/term_frequencies.pkl", "wb") as tf:
+        with open(self.term_freq_path, "wb") as tf:
             pickle.dump(self.term_frequencies, tf)
 
-        with open(f"{CACHE_PATH}/doc_lengths.pkl", "wb") as dl:
+        with open(self.doc_len_path, "wb") as dl:
             pickle.dump(self.doc_lengths, dl)
 
     def load(self):
         try:
-            with open(f"{CACHE_PATH}/index.pkl", "rb") as idx:
+            with open(self.index_path, "rb") as idx:
                 self.index = pickle.load(idx)
 
-            with open(f"{CACHE_PATH}/docmap.pkl", "rb") as doc:
+            with open(self.docmap_path, "rb") as doc:
                 self.docmap = pickle.load(doc)
 
-            with open(f"{CACHE_PATH}/term_frequencies.pkl", "rb") as tf:
+            with open(self.term_freq_path, "rb") as tf:
                 self.term_frequencies = pickle.load(tf)
 
-            with open(f"{CACHE_PATH}/doc_lengths.pkl", "rb") as dl:
+            with open(self.doc_len_path, "rb") as dl:
                 self.doc_lengths = pickle.load(dl)
 
         except FileNotFoundError:

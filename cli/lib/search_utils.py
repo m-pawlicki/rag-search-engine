@@ -12,8 +12,12 @@ DEFAULT_CHUNK_SIZE = 200
 DEFAULT_CHUNK_OVERLAP = 0
 DEFAULT_SEMANTIC_CHUNK_SIZE = 4
 
+# Controls diminishing returns/saturation
 BM25_K1 = 1.5
+# Normalization strength/how much we care about document length
 BM25_B = 0.75
+# Weighting of keyword to semantic results, 1.0 = 100% keyword, 0.0 = 100% semantic
+ALPHA = 0.5
 
 def load_movies():
     with open(DATA_PATH) as file:
