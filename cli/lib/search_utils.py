@@ -1,5 +1,7 @@
 import json
 import os
+from dotenv import load_dotenv
+from google import genai
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 DATA_PATH = os.path.join(PROJECT_ROOT, "data", "movies.json")
@@ -20,6 +22,14 @@ BM25_B = 0.75
 ALPHA = 0.5
 # k value for RRF (reciprocal rank fusion), how much weight we give to higher-ranked results vs lower-ranked results, eg. lower k = more weight, higher k = less weight
 K_VALUE = 60
+
+load_dotenv()
+API_KEY = os.environ.get("GEMINI_API_KEY")
+MODEL = "gemma-4-31b-it"
+
+if not API_KEY:
+    raise RuntimeError("GEMINI_API_KEY is not set")
+CLIENT = genai.Client(api_key=API_KEY)
 
 def load_movies():
     with open(DATA_PATH) as file:
