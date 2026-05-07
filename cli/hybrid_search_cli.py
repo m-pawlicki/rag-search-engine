@@ -19,7 +19,7 @@ def main() -> None:
     rrf_search_parser.add_argument("query", type=str, help="Search query")
     rrf_search_parser.add_argument("--k", type=int, default=K_VALUE, help="How much weight higher-ranked results have vs lower-ranked ones, lower k = more weight, higher k = less weight")
     rrf_search_parser.add_argument("--limit", type=int, default=DEFAULT_SEARCH_LIMIT, help="How many search results to return")
-    rrf_search_parser.add_argument("--enhance", type=str, choices=["spell"], help="Query enhancement method")
+    rrf_search_parser.add_argument("--enhance", type=str, choices=["spell", "rewrite"], help="Query enhancement method")
 
     args = parser.parse_args()
 
@@ -29,11 +29,18 @@ def main() -> None:
         case "weighted-search":
             hs.weighted_search_command(args.query, args.alpha, args.limit)
         case "rrf-search":
+            
             match args.enhance:
                 case "spell":
                     enhanced_query = qe.spell_enhance_command(args.query)
                     print(f"Enhanced query ({args.enhance}): '{args.query}' -> '{enhanced_query}'\n")
                     hs.rrf_search_command(enhanced_query, args.k, args.limit)
+
+                case "rewrite":
+                    enhanced_query = qe.rewrite_enhance_command(args.query)
+                    print(f"Enhanced query ({args.enhance}): '{args.query}' -> '{enhanced_query}'\n")
+                    hs.rrf_search_command(enhanced_query, args.k, args.limit)
+
                 case _:
                     hs.rrf_search_command(args.query, args.k, args.limit)
         case _:
